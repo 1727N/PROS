@@ -11,7 +11,7 @@ pros::Motor lM(-19, pros::E_MOTOR_GEARSET_06); // left middle motor. port 11, re
 pros::Motor lB(-20, pros::E_MOTOR_GEARSET_06); // left back motor. port 1, reversed
 pros::Motor rF(2, pros::E_MOTOR_GEARSET_06); // right front motor. port 2
 pros::Motor rM(12, pros::E_MOTOR_GEARSET_06); // right middle motor. port 11
-pros::Motor rB(11, pros::E_MOTOR_GEARSET_06); // right back motor. port 13
+pros::Motor rB(13, pros::E_MOTOR_GEARSET_06); // right back motor. port 13
 
 // other motors
 pros::Motor intake(5,pros::E_MOTOR_GEARSET_18);
@@ -133,7 +133,7 @@ void nearSide()
 {
     chassis.setPose(0, 0, 45);
     intake.move_voltage(3000);
-    chassis.moveToPoint(0, 22, 5000, {.minSpeed = 80});
+    chassis.moveToPoint(18, 18, 5000, {.minSpeed = 80});
 
     chassis.turnToHeading(90, 1200);
     intake.move_voltage(-3000);
@@ -141,7 +141,7 @@ void nearSide()
     intake = 0;
     chassis.turnToHeading(-90, 1200);
     
-    chassis.moveToPoint(6, 25, 10000, {.forwards = false});
+    chassis.moveToPoint(10, 18, 10000, {.forwards = false});
     //chassis.moveToPoint(6, 25, 10000, false, 127, false);
 
 }
