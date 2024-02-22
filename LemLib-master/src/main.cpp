@@ -6,26 +6,28 @@
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 // drive motors
-pros::Motor lF(-2, pros::E_MOTOR_GEARSET_06); // left front motor. port 12, reversed
-pros::Motor lM(-6, pros::E_MOTOR_GEARSET_06); // left middle motor. port 11, reversed
-pros::Motor lB(-4, pros::E_MOTOR_GEARSET_06); // left back motor. port 1, reversed
-pros::Motor rF(3, pros::E_MOTOR_GEARSET_06); // right front motor. port 2
-pros::Motor rM(10, pros::E_MOTOR_GEARSET_06); // right middle motor. port 11
-pros::Motor rB(95, pros::E_MOTOR_GEARSET_06); // right back motor. port 13
+pros::Motor lF(-9, pros::E_MOTOR_GEARSET_06); // left front motor. port 12, reversed
+pros::Motor lM(-19, pros::E_MOTOR_GEARSET_06); // left middle motor. port 11, reversed
+pros::Motor lB(-20, pros::E_MOTOR_GEARSET_06); // left back motor. port 1, reversed
+pros::Motor rF(2, pros::E_MOTOR_GEARSET_06); // right front motor. port 2
+pros::Motor rM(12, pros::E_MOTOR_GEARSET_06); // right middle motor. port 11
+pros::Motor rB(11, pros::E_MOTOR_GEARSET_06); // right back motor. port 13
 
 // other motors
-pros::Motor intake(11,pros::E_MOTOR_GEARSET_18);
-pros::Motor kicker(1, pros::E_MOTOR_GEARSET_18);
+pros::Motor intake(5,pros::E_MOTOR_GEARSET_18);
+pros::Motor kicker(6, pros::E_MOTOR_GEARSET_18);
 
-pros::ADIDigitalOut LWing('A');
-pros::ADIDigitalOut RWing('H');
+pros::ADIDigitalOut LWing('D');
+pros::ADIDigitalOut RWing('B');
+
+pros::ADIDigitalOut Hang('C');
 
 // motor groups
 pros::MotorGroup leftMotors({lF, lM, lB}); // left motor group
 pros::MotorGroup rightMotors({rF, rM, rB}); // right motor group
 
-// Inertial Sensor on port 2
-pros::Imu imu(7);
+// Inertial Sensor on port 1
+pros::Imu imu(1);
 
 // tracking wheels
 // horizontal tracking wheel encoder. Rotation sensor, port 15, reversed (negative signs don't work due to a pros bug)
@@ -98,7 +100,8 @@ void initialize() {
 
     // thread to for brain screen and position logging
     pros::Task screenTask([&]() {
-        lemlib::Pose pose(0, 0, 0);
+        lemlib::Pose pose(0, 0, 45);
+        chassis.setPose(0, 0, 45);
         while (true) {
             // print robot location to the brain screen
             pros::lcd::print(0, "X: %f", chassis.getPose().x); // x
@@ -126,23 +129,46 @@ void competition_initialize() {}
 // this needs to be put outside a function
 ASSET(example_txt); // '.' replaced with "_" to make c++ happy
 
+void nearSide()
+{
+    chassis.setPose(0, 0, 45);
+    intake.move_voltage(3000);
+    chassis.moveToPoint(0, 22, 5000, {.minSpeed = 80});
+
+    chassis.turnToHeading(90, 1200);
+    intake.move_voltage(-3000);
+    pros::delay(800);
+    intake = 0;
+    chassis.turnToHeading(-90, 1200);
+    
+    chassis.moveToPoint(6, 25, 10000, {.forwards = false});
+    //chassis.moveToPoint(6, 25, 10000, false, 127, false);
+
+}
+
+void farSide()
+{
+
+}
+
 /**
  * Runs during auto
  *
  * This is an example autonomous routine which demonstrates a lot of the features LemLib has to offer
  */
 void autonomous() {
+    nearSide();
     //chassis.moveToPoint(0, 10, 10000);
     //chassis.turnToHeading(90, 10000);
     //chassis.moveToPoint(0, 0, 10000);
 
     // example movement: Move to x: 20 and y: 15, and face heading 90. Timeout set to 4000 ms
-        chassis.moveToPose(20, 20, 15, 800);
-        chassis.moveToPose(20, 20, 30, 800);
-        chassis.moveToPose(20, 20, 45, 800);
+        //chassis.moveToPose(20, 20, 15, 800);
+        //chassis.moveToPose(20, 20, 30, 800);
+        //chassis.moveToPose(20, 20, 45, 800);
 
     // example movement: Move to x: 0 and y: 0 and face heading 270, going backwards. Timeout set to 4000ms
-        chassis.moveToPose(0, 0, 0, 2000, {.forwards = false});
+        //chassis.moveToPose(0, 0, 0, 2000, {.forwards = false});
     // cancel the movement after it has travelled 10 inches
         //chassis.waitUntil(10);
         //chassis.cancelMotion();
@@ -223,7 +249,7 @@ void opcontrol() {
     while (true) {
         arcade();
         intakeControl(8);
-        kickerControl(9.5);
+        kickerControl(8.5);
         wingControl();
 
         // delay to save resources

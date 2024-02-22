@@ -741,7 +741,7 @@ void lemlib::Chassis::moveToPose(float x, float y, float theta, int timeout, Mov
  */
 void lemlib::Chassis::moveToPoint(float x, float y, int timeout, MoveToPointParams params, bool async) {
     params.earlyExitRange = fabs(params.earlyExitRange);
-    this->requestMotionStart();
+    this->requestMotionStart(); 
     // were all motions cancelled?
     if (!this->motionRunning) return;
     // if the function is async, run it in a new task
