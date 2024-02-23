@@ -132,22 +132,55 @@ ASSET(example_txt); // '.' replaced with "_" to make c++ happy
 void nearSide()
 {
     chassis.setPose(0, 0, 45);
-    intake.move_voltage(3000);
-    chassis.moveToPoint(18, 18, 5000, {.minSpeed = 80});
+    intake = 70;
+    chassis.moveToPoint(18, 18, 5000);
 
     chassis.turnToHeading(90, 1200);
-    intake.move_voltage(-3000);
+    intake = -127;
     pros::delay(800);
     intake = 0;
+    chassis.moveToPoint(20, 18, 3000);
+    chassis.moveToPoint(16, 18, 3000);
+
     chassis.turnToHeading(-90, 1200);
     
-    chassis.moveToPoint(10, 18, 10000, {.forwards = false});
-    //chassis.moveToPoint(6, 25, 10000, false, 127, false);
+    chassis.moveToPoint(22, 18, 3000, {.forwards = false});
 
+    chassis.moveToPose(-5, 12, -180, 3000);
+
+    chassis.turnToPoint(-5, -10, 1000);
+    chassis.moveToPoint(-5, -10, 2000);
+    chassis.turnToHeading(-180, 1000);
 }
 
 void farSide()
 {
+    chassis.setPose(0, 0, 180);
+
+    intake = 40;
+
+    chassis.moveToPoint(0, -5, 1500);
+
+    chassis.moveToPoint(0, 10, 3000, {.forwards = false});
+
+    chassis.turnToHeading(0, 1000);
+    //align properly
+
+    chassis.moveToPose(-10, 15, -90, 2000);
+
+    intake = -70;
+
+    chassis.moveToPoint(-15, 15, 2000);
+    //knock matchload zone ball
+
+    chassis.turnToHeading(90, 1000);
+
+    chassis.moveToPoint(-17, 15, 2000, {.forwards = false});
+    //back into goal
+
+    chassis.moveToPoint(15, 15, 2000);
+    chassis.turnToPoint(-20, 0, 1000);
+
 
 }
 
@@ -157,7 +190,9 @@ void farSide()
  * This is an example autonomous routine which demonstrates a lot of the features LemLib has to offer
  */
 void autonomous() {
-    nearSide();
+    //nearSide();
+    farSide();
+
     //chassis.moveToPoint(0, 10, 10000);
     //chassis.turnToHeading(90, 10000);
     //chassis.moveToPoint(0, 0, 10000);
@@ -200,16 +235,14 @@ void arcade(){
     chassis.curvature(leftY, rightX);
 }
 
-void intakeControl(float volts){
+void intakeControl(int power){
     intake.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
 
-    volts = volts * 1000;
-
     if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)){
-        intake.move_voltage(volts);
+        intake = power;
     }
     else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)){
-        intake.move_velocity(-10000);
+        intake = -127;
     }
     else {
         intake.brake();
@@ -227,13 +260,11 @@ void wingControl(){
     }
 }
 
-void kickerControl(float volts){
+void kickerControl(int power){
     kicker.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
 
-    volts = volts * 1000;
-
     if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)){
-        kicker.move_voltage(-volts);
+        kicker = -power;
     }
     else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)){
         kicker.brake();
@@ -248,8 +279,8 @@ void opcontrol() {
     // loop to continuously update motors
     while (true) {
         arcade();
-        intakeControl(8);
-        kickerControl(8.5);
+        intakeControl(80);
+        kickerControl(80);
         wingControl();
 
         // delay to save resources
