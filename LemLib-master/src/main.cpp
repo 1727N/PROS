@@ -1,6 +1,7 @@
 #include "main.h"
 #include "lemlib/api.hpp"
 #include <algorithm>
+#include <cmath>
 
 // controller
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
@@ -38,33 +39,33 @@ lemlib::TrackingWheel horizontal(&horizontalEnc, lemlib::Omniwheel::NEW_325, -3.
 // drivetrain settings
 lemlib::Drivetrain drivetrain(&leftMotors, // left motor group
                               &rightMotors, // right motor group
-                              10, // 10 inch track width
+                              10.2, // 10.2 inch track width
                               lemlib::Omniwheel::NEW_325, // using new 3.25" omnis
                               360, // drivetrain rpm is 360
                               2 // chase power is 2. If we had traction wheels, it would have been 8
 );
 
 // lateral motion controller
-lemlib::ControllerSettings linearController(20, // proportional gain (kP)
-                                            0, // integral gain (kI)
-                                            45, // derivative gain (kD)
-                                            1, // anti windup
+lemlib::ControllerSettings linearController(14, // proportional gain (kP)
+                                            1, // integral gain (kI)
+                                            70, // derivative gain (kD)
+                                            3, // anti windup
                                             0.1, // small error range, in inches
-                                            100, // small error range timeout, in milliseconds
+                                            300, // small error range timeout, in milliseconds
                                             0.3, // large error range, in inches
-                                            400, // large error range timeout, in milliseconds
+                                            500, // large error range timeout, in milliseconds
                                             20 // maximum acceleration (slew)
 );
 
 // angular motion controller
-lemlib::ControllerSettings angularController(3.5, // proportional gain (kP)
-                                             0.1, // integral gain (kI)
-                                             23, // derivative gain (kD)
+lemlib::ControllerSettings angularController(4, // proportional gain (kP)
+                                             0.5, // integral gain (kI)
+                                             27, // derivative gain (kD)
                                              3, // anti windup
                                              1, // small error range, in degrees
-                                             100, // small error range timeout, in milliseconds
+                                             300, // small error range timeout, in milliseconds
                                              2, // large error range, in degrees
-                                             400, // large error range timeout, in milliseconds
+                                             500, // large error range timeout, in milliseconds
                                              0 // maximum acceleration (slew)
 );
 
@@ -100,8 +101,6 @@ void initialize() {
 
     // thread to for brain screen and position logging
     pros::Task screenTask([&]() {
-        lemlib::Pose pose(0, 0, 45);
-        chassis.setPose(0, 0, 45);
         while (true) {
             // print robot location to the brain screen
             pros::lcd::print(0, "X: %f", chassis.getPose().x); // x
@@ -181,7 +180,10 @@ void farSide()
     chassis.moveToPoint(15, 15, 2000);
     chassis.turnToPoint(-20, 0, 1000);
 
+}
 
+void skills(){
+    
 }
 
 /**
@@ -191,19 +193,30 @@ void farSide()
  */
 void autonomous() {
     //nearSide();
-    farSide();
-
-    //chassis.moveToPoint(0, 10, 10000);
+    //farSide();  
+    //intake = 50;
     //chassis.turnToHeading(90, 10000);
-    //chassis.moveToPoint(0, 0, 10000);
+    chassis.moveToPoint(0, 15, 2000);
+    chassis.turnToPoint(0, 0, 1000);
+    chassis.moveToPoint(0, 0, 2000);
+
+    //chassis.turnToHeading(225, 1000);
+    //chassis.moveToPoint(0, 0, 2000);
+
+
+    //chassis.moveToPoint(0, 10, 1000);
+    // chassis.waitUntil(4);
+    // chassis.cancelMotion();
+    //chassis.moveToPoint(5, 15, 1000);
+    // chassis.waitUntil(4);
+    // chassis.cancelMotion();
+    //chassis.moveToPoint(10, 20, 1000);
+
+
 
     // example movement: Move to x: 20 and y: 15, and face heading 90. Timeout set to 4000 ms
-        //chassis.moveToPose(20, 20, 15, 800);
-        //chassis.moveToPose(20, 20, 30, 800);
-        //chassis.moveToPose(20, 20, 45, 800);
 
     // example movement: Move to x: 0 and y: 0 and face heading 270, going backwards. Timeout set to 4000ms
-        //chassis.moveToPose(0, 0, 0, 2000, {.forwards = false});
     // cancel the movement after it has travelled 10 inches
         //chassis.waitUntil(10);
         //chassis.cancelMotion();
@@ -228,11 +241,17 @@ void autonomous() {
 }
 
 void arcade(){
-    // get joystick positions
     int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
     int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
-    // move the chassis with curvature drive
-    chassis.curvature(leftY, rightX);
+
+    float turnScalingFactor = abs(leftY) <= 10 ? 1 : 0.7; 
+
+    float leftPower = leftY + rightX * turnScalingFactor;
+    float rightPower = leftY - rightX * turnScalingFactor;
+
+    leftMotors.move(leftPower);
+    rightMotors.move(rightPower);
+    //chassis.curvature(leftY, rightX);
 }
 
 void intakeControl(int power){
@@ -270,6 +289,8 @@ void kickerControl(int power){
         kicker.brake();
     }
 }
+
+
 
 /**
  * Runs in driver control
