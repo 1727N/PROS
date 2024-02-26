@@ -21,7 +21,11 @@ pros::Motor kicker(6, pros::E_MOTOR_GEARSET_18);
 pros::ADIDigitalOut LWing('D');
 pros::ADIDigitalOut RWing('B');
 
+pros::ADIDigitalOut LBWing('E');
+pros::ADIDigitalOut RBWing('A');
+
 pros::ADIDigitalOut Hang('C');
+
 
 // motor groups
 pros::MotorGroup leftMotors({lF, lM, lB}); // left motor group
@@ -154,32 +158,44 @@ void nearSide()
 
 void farSide()
 {
+    Hang.set_value(true);
+    pros::delay(500);
+    Hang.set_value(false);
+
     chassis.setPose(0, 0, 180);
 
     intake = 40;
 
-    chassis.moveToPoint(0, -5, 1500);
+    chassis.moveToPoint(0, -3, 1500);
 
-    chassis.moveToPoint(0, 10, 3000, {.forwards = false});
-
-    chassis.turnToHeading(0, 1000);
+    chassis.moveToPoint(0, 30, 1500, {.forwards = false});
+    
+   
     //align properly
+    chassis.turnToHeading(150, 1200);
+    chassis.moveToPoint(-10, 42, 1200, {.forwards = false});
+    LBWing.set_value(true);
+    chassis.turnToHeading(145, 1200);
+    chassis.moveToPoint(-15, 47, 1200, {.forwards = false});
+    LBWing.set_value(false);
+    chassis.moveToPoint(-20, 52, 1500, {.forwards = false});
 
-    chassis.moveToPose(-10, 15, -90, 2000);
 
-    intake = -70;
+    //chassis.moveToPose(-15, 58, 90, 2000, {.forwards = false});
+    //chassis.waitUntil(10);
+    //LBWing.set_value(true);
+    // chassis.waitUntil(20);
+    // LBWing.set_value(false);
 
-    chassis.moveToPoint(-15, 15, 2000);
-    //knock matchload zone ball
 
-    chassis.turnToHeading(90, 1000);
+    chassis.turnToHeading(90, 1200);
+    chassis.moveToPoint(-30, 52, 2000, {.forwards = false});
+    //push in goal
 
-    chassis.moveToPoint(-17, 15, 2000, {.forwards = false});
-    //back into goal
+    chassis.moveToPoint(-20, 45, 2000);
+    //get out of goal
 
-    chassis.moveToPoint(15, 15, 2000);
-    chassis.turnToPoint(-20, 0, 1000);
-
+    intake = 0;
 }
 
 
@@ -220,17 +236,17 @@ void skills(){
     chassis.moveToPoint(22, -74, 5000);
     chassis.moveToPoint(22, -55, 5000);
 
-    // RWing.set_value(true);
+    RWing.set_value(true);
     chassis.moveToPose(50, -55, 180, 3000);//center
     // chassis.moveToPoint(48, -38, 5000);
     
     
     chassis.turnToHeading(180, 1200);
     
-    // LWing.set_value(true);
+    LWing.set_value(true);
    
     chassis.moveToPoint(48, -82, 5000);//it goes in you feel it
-
+    // LWing.set_value(true);
     chassis.moveToPoint(48, -55, 5000, {.forwards = false});
     chassis.turnToHeading(180, 1200);
     chassis.moveToPoint(62, -82, 5000);
@@ -244,9 +260,9 @@ void skills(){
  */
 void autonomous() {
     // nearSide();
-    //farSide();  
+    farSide();  
     //intake = 50;
-   skills();
+//    skills();
 }
 
 void arcade(){
