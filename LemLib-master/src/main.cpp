@@ -182,8 +182,59 @@ void farSide()
 
 }
 
+
 void skills(){
+    chassis.setPose(0, 0, 45);
+    intake = 70;
+    chassis.moveToPoint(18, 19, 5000);
+
+    chassis.turnToHeading(90, 1200);
+    intake = -127;
+    chassis.moveToPoint(27, 19, 5000); //it goes in you feel it
+    pros::delay(800);
+    intake = 0;
+
+    // //back it up
+    // chassis.moveToPoint(16, 19, 5000, {.forwards = false});
+    // chassis.turnToHeading(270, 1200);
+    // //push it in
+    // chassis.moveToPoint(27, 19, 2000, {.forwards = false});
+    // chassis.moveToPoint(24, 19, 5000);
+    // chassis.turnToHeading(90, 1200);
+
+    //move to matchload
+    chassis.moveToPoint(14, 19, 5000, {.forwards = false});
+    chassis.turnToHeading(155, 1200);
+    chassis.moveToPoint(11, 20, 5000, {.forwards = false});
+    // open right back wing or something
+    chassis.turnToHeading(160, 1200);
+    chassis.setBrakeMode(MOTOR_BRAKE_HOLD);
+    //but heres the kicker
+    //30 seconds
+    chassis.setBrakeMode(MOTOR_BRAKE_COAST);
+    chassis.moveToPoint(-3,-5, 4500);
+    chassis.moveToPoint(2, -74, 5000);
+    chassis.turnToHeading(90, 1200);
+
+    //start scooping
+    chassis.moveToPoint(24, -74, 5000);
+    chassis.moveToPoint(24, -55, 5000);
+
+    // RWing.set_value(true);
+    chassis.moveToPose(50, -55, 180, 3000);//center
+    // chassis.moveToPoint(48, -38, 5000);
     
+    
+    chassis.turnToHeading(180, 1200);
+    
+    // LWing.set_value(true);
+   
+    chassis.moveToPoint(48, -82, 5000);//it goes in you feel it
+
+    chassis.moveToPoint(48, -55, 5000, {.forwards = false});
+    chassis.turnToHeading(180, 1200);
+    chassis.moveToPoint(62, -82, 5000);
+    chassis.turnToHeading(180, 1200);
 }
 
 /**
@@ -192,52 +243,10 @@ void skills(){
  * This is an example autonomous routine which demonstrates a lot of the features LemLib has to offer
  */
 void autonomous() {
-    //nearSide();
+    // nearSide();
     //farSide();  
     //intake = 50;
-    //chassis.turnToHeading(90, 10000);
-    chassis.moveToPoint(0, 15, 2000);
-    chassis.turnToPoint(0, 0, 1000);
-    chassis.moveToPoint(0, 0, 2000);
-
-    //chassis.turnToHeading(225, 1000);
-    //chassis.moveToPoint(0, 0, 2000);
-
-
-    //chassis.moveToPoint(0, 10, 1000);
-    // chassis.waitUntil(4);
-    // chassis.cancelMotion();
-    //chassis.moveToPoint(5, 15, 1000);
-    // chassis.waitUntil(4);
-    // chassis.cancelMotion();
-    //chassis.moveToPoint(10, 20, 1000);
-
-
-
-    // example movement: Move to x: 20 and y: 15, and face heading 90. Timeout set to 4000 ms
-
-    // example movement: Move to x: 0 and y: 0 and face heading 270, going backwards. Timeout set to 4000ms
-    // cancel the movement after it has travelled 10 inches
-        //chassis.waitUntil(10);
-        //chassis.cancelMotion();
-    // example movement: Turn to face the point x:45, y:-45. Timeout set to 1000
-    // dont turn faster than 60 (out of a maximum of 127)
-        //chassis.turnToPoint(45, -45, 1000, {.maxSpeed = 60});
-    // example movement: Turn to face a direction of 90º. Timeout set to 1000
-    // will always be faster than 100 (out of a maximum of 127)
-        //chassis.turnToHeading(90, 1000, {.minSpeed = 100});
-    // example movement: Follow the path in path.txt. Lookahead at 15, Timeout set to 4000
-    // following the path with the back of the robot (forwards = false)
-    // see line 116 to see how to define a path
-        //chassis.follow(example_txt, 15, 4000, false);
-    // wait until the chassis has travelled 10 inches. Otherwise the code directly after
-    // the movement will run immediately
-    // Unless its another movement, in which case it will wait
-        //chassis.waitUntil(10);
-        //pros::lcd::print(4, "Travelled 10 inches during pure pursuit!");
-    // wait until the movement is done
-        //chassis.waitUntilDone();
-        //pros::lcd::print(4, "pure pursuit finished!");
+   skills();
 }
 
 void arcade(){
