@@ -190,7 +190,7 @@ void skills(){
 
     chassis.turnToHeading(90, 1200);
     intake = -127;
-    chassis.moveToPoint(27, 19, 5000); //it goes in you feel it
+    chassis.moveToPoint(27, 19, 2000); //it goes in you feel it
     pros::delay(800);
     intake = 0;
 
@@ -217,8 +217,8 @@ void skills(){
     chassis.turnToHeading(90, 1200);
 
     //start scooping
-    chassis.moveToPoint(24, -74, 5000);
-    chassis.moveToPoint(24, -55, 5000);
+    chassis.moveToPoint(22, -74, 5000);
+    chassis.moveToPoint(22, -55, 5000);
 
     // RWing.set_value(true);
     chassis.moveToPose(50, -55, 180, 3000);//center
