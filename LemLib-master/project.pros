@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "StatesManifest",
+    "project_name": "StatesManifestNear",
     "target": "v5",
     "templates": {
       "kernel": {
@@ -168,7 +168,8 @@
     },
     "upload_options": {
       "description": "Bruh",
-      "icon": "planet"
+      "icon": "planet",
+      "slot": 2
     }
   }
 }
