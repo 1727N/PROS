@@ -73,6 +73,18 @@ lemlib::ControllerSettings angularController(4, // proportional gain (kP)
                                              0 // maximum acceleration (slew)
 );
 
+// angular motion controller
+lemlib::ControllerSettings swingController(4, // proportional gain (kP)
+                                             0.5, // integral gain (kI)
+                                             27, // derivative gain (kD)
+                                             3, // anti windup
+                                             1, // small error range, in degrees
+                                             300, // small error range timeout, in milliseconds
+                                             2, // large error range, in degrees
+                                             500, // large error range timeout, in milliseconds
+                                             0 // maximum acceleration (slew)
+);
+
 // sensors for odometry
 // note that in this example we use internal motor encoders (IMEs), so we don't pass vertical tracking wheels
 lemlib::OdomSensors sensors(nullptr, // vertical tracking wheel 1, set to null
@@ -83,7 +95,7 @@ lemlib::OdomSensors sensors(nullptr, // vertical tracking wheel 1, set to null
 );
 
 // create the chassis
-lemlib::Chassis chassis(drivetrain, linearController, angularController, sensors);
+lemlib::Chassis chassis(drivetrain, linearController, angularController, swingController, sensors);
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.

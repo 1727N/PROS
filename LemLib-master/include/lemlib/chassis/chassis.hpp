@@ -324,6 +324,32 @@ class Chassis {
          * @param params struct to simulate named parameters
          * @param async whether the function should be run asynchronously. true by default
          */
+         void swingToHeading(bool rightSwing, float theta, int timeout, bool async = true);
+        /**
+         * @brief Turn the chassis so it is facing the target heading
+         *
+         * The PID logging id is "swingPID"
+         *
+         * @param rightSwing swing to right? 
+         * @param theta heading location
+         * @param timeout longest time the robot can spend moving
+         * @param params struct to simulate named parameters
+         * @param async whether the function should be run asynchronously. true by default
+         */
+        void swingToHeading(bool rightSwing, float theta, int timeout, TurnToParams params, bool async = true);
+        /**
+         * @brief Move the chassis towards the target pose
+         *
+         * Uses the boomerang controller
+         *
+         * @param rightSwing swing to right? 
+         * @param x x location
+         * @param y y location
+         * @param theta target heading in degrees.
+         * @param timeout longest time the robot can spend moving
+         * @param params struct to simulate named parameters
+         * @param async whether the function should be run asynchronously. true by default
+         */
         void moveToPose(float x, float y, float theta, int timeout, MoveToPoseParams params = {}, bool async = true);
         /**
          * @brief Move the chassis towards a target point
@@ -409,16 +435,20 @@ class Chassis {
 
         ControllerSettings lateralSettings;
         ControllerSettings angularSettings;
+        ControllerSettings swingSettings;
         Drivetrain drivetrain;
         OdomSensors sensors;
         DriveCurveFunction_t driveCurve;
 
         PID lateralPID;
         PID angularPID;
+        PID swingPID;
         ExitCondition lateralLargeExit;
         ExitCondition lateralSmallExit;
         ExitCondition angularLargeExit;
         ExitCondition angularSmallExit;
+        ExitCondition swingLargeExit;
+        ExitCondition swingSmallExit;
     private:
         pros::Mutex mutex;
 };

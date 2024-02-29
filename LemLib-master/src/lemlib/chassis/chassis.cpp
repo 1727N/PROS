@@ -61,7 +61,7 @@ lemlib::Drivetrain::Drivetrain(pros::MotorGroup* leftMotors, pros::MotorGroup* r
  * @param sensors sensors to be used for odometry
  * @param driveCurve drive curve to be used. defaults to `defaultDriveCurve`
  */
-lemlib::Chassis::Chassis(Drivetrain drivetrain, ControllerSettings lateralSettings, ControllerSettings angularSettings,
+lemlib::Chassis::Chassis(Drivetrain drivetrain, ControllerSettings lateralSettings, ControllerSettings angularSettings, ControllerSettings swingSettings,
                          OdomSensors sensors, DriveCurveFunction_t driveCurve)
     : drivetrain(drivetrain),
       lateralSettings(lateralSettings),
@@ -70,10 +70,13 @@ lemlib::Chassis::Chassis(Drivetrain drivetrain, ControllerSettings lateralSettin
       driveCurve(driveCurve),
       lateralPID(lateralSettings.kP, lateralSettings.kI, lateralSettings.kD, lateralSettings.windupRange, true),
       angularPID(angularSettings.kP, angularSettings.kI, angularSettings.kD, angularSettings.windupRange, true),
+      swingPID(swingSettings.kP, swingSettings.kI, swingSettings.kD, swingSettings.windupRange, true),
       lateralLargeExit(lateralSettings.largeError, lateralSettings.largeErrorTimeout),
       lateralSmallExit(lateralSettings.smallError, lateralSettings.smallErrorTimeout),
       angularLargeExit(angularSettings.largeError, angularSettings.largeErrorTimeout),
-      angularSmallExit(angularSettings.smallError, angularSettings.smallErrorTimeout) {}
+      angularSmallExit(angularSettings.smallError, angularSettings.smallErrorTimeout),
+      swingLargeExit(swingSettings.largeError, swingSettings.largeErrorTimeout),
+      swingSmallExit(swingSettings.smallError, swingSettings.smallErrorTimeout) {}
 
 bool isDriverControl() {
     return pros::competition::is_connected() && !pros::competition::is_autonomous() &&
@@ -397,6 +400,87 @@ void lemlib::Chassis::turnToPoint(float x, float y, int timeout, TurnToParams pa
     }
 
     // stop the drivetrain
+    drivetrain.leftMotors->move(0);
+    drivetrain.rightMotors->move(0);
+    // set distTraveled to -1 to indicate that the function has finished
+    distTravelled = -1;
+    this->endMotion();
+}
+
+/**
+ * @brief Swing the chassis so it is facing the target heading
+ *
+ * The PID logging id is "swingPID"
+ *
+ * @param rightSwing swing to right?
+ * @param theta heading location
+ * @param timeout longest time the robot can spend moving
+ * @param params struct to simulate named parameters
+ * @param async whether the function should be run asynchronously. true by default
+ */
+void lemlib::Chassis::swingToHeading(bool rightSwing, float theta, int timeout, bool async) {
+    this->requestMotionStart();
+    // were all motions cancelled?
+    if (!this->motionRunning) return;
+    // if the function is async, run it in a new task
+    if (async) {
+        pros::Task task([&]() { swingToHeading(rightSwing, theta, timeout, false); });
+        this->endMotion();
+        pros::delay(10); // delay to give the task time to start
+        return;
+    }
+    float targetTheta;
+    float deltaTheta;
+    float motorPower;
+    float prevMotorPower = 0;
+    float startTheta = getPose().theta;
+    std::optional<float> prevDeltaTheta = std::nullopt;
+    std::uint8_t compState = pros::competition::get_status();
+    distTravelled = 0;
+    Timer timer(timeout);
+    swingLargeExit.reset();
+    swingSmallExit.reset();
+    swingPID.reset();
+
+    // main loop
+    while (!timer.isDone() && !swingLargeExit.getExit() && !swingSmallExit.getExit() && this->motionRunning) {
+        // update variables
+        Pose pose = getPose();
+        pose.theta = fmod(pose.theta, 360);
+
+        // update completion vars
+        distTravelled = fabs(angleError(pose.theta, startTheta));
+
+        targetTheta = theta;
+
+        // calculate deltaTheta
+        deltaTheta = angleError(targetTheta, pose.theta, false);
+        if (prevDeltaTheta == std::nullopt) prevDeltaTheta = deltaTheta;
+
+        // calculate the speed
+        motorPower = swingPID.update(deltaTheta);
+        swingLargeExit.update(deltaTheta);
+        swingSmallExit.update(deltaTheta);
+
+        // cap the speed
+        if (fabs(deltaTheta) > 20) motorPower = slew(motorPower, prevMotorPower, swingSettings.slew);
+        prevMotorPower = motorPower;
+
+        infoSink()->debug("Turn Motor Power: {} ", motorPower);
+
+        // move the drivetrain
+
+        if (rightSwing){
+            drivetrain.rightMotors->move(-motorPower);
+        else {
+            drivetrain.leftMotors->move(motorPower);
+        }
+
+        pros::delay(10);
+    }
+
+    // stop the drivetrain
+
     drivetrain.leftMotors->move(0);
     drivetrain.rightMotors->move(0);
     // set distTraveled to -1 to indicate that the function has finished
