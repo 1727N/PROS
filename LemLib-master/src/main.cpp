@@ -63,12 +63,12 @@ lemlib::ControllerSettings linearController(14, // proportional gain (kP)
 
 // angular motion controller
 lemlib::ControllerSettings angularController(4, // proportional gain (kP)
-                                             0.5, // integral gain (kI)
+                                             0, // integral gain (kI)
                                              27, // derivative gain (kD)
                                              3, // anti windup
                                              1, // small error range, in degrees
                                              300, // small error range timeout, in milliseconds
-                                             2, // large error range, in degrees
+                                             1.5, // large error range, in degrees
                                              500, // large error range timeout, in milliseconds
                                              0 // maximum acceleration (slew)
 );
@@ -84,6 +84,11 @@ lemlib::OdomSensors sensors(nullptr, // vertical tracking wheel 1, set to null
 
 // create the chassis
 lemlib::Chassis chassis(drivetrain, linearController, angularController, sensors);
+
+int easy = 90;
+int medium = 100;
+int hard = 127;
+
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -134,24 +139,31 @@ ASSET(example_txt); // '.' replaced with "_" to make c++ happy
 
 void nearSide()
 {
+    pros::delay(3200);
     chassis.setPose(0, 0, 45);
     //bakc it up
-    chassis.moveToPoint(-18, -12, 2000, {.forwards = false});
-    chassis.moveToPoint(-28, -12, 2000, {.forwards = false});
+    chassis.moveToPoint(-16, -12, 2000, {.forwards = false});
+    //trick pid to get more speed
+    chassis.moveToPoint(-60, -12, 2000, {.forwards = false});
+    chassis.waitUntil(10);
+    chassis.cancelMotion();
 
-    chassis.moveToPoint(-20, -12, 2000);
+    chassis.moveToPoint(-16, -10, 2000);
     chassis.turnToHeading(-90, 1200);
 
-    chassis.moveToPoint(-8, 4, 2000, {.forwards = false});
-    chassis.waitUntil(3);
+
+    // chassis.moveToPoint(-14, -8, 2000, {.forwards = false});
+    chassis.moveToPoint(-6, 2, 2000, {.forwards = false});
+    // chassis.waitUntil(1);
     LBWing.set_value(true);
-    chassis.waitUntil(16);
+    chassis.waitUntil(10);
     LBWing.set_value(false);
-    chassis.moveToPoint(0, 4, 2000, {.forwards = false});
 
-
+    chassis.moveToPoint(-1, 8, 1000, {.forwards = false});
     chassis.turnToHeading(180, 1200);
-    chassis.moveToPoint(0, 33, 3000, {.forwards = false});
+    chassis.waitUntilDone();
+    chassis.setPose(0,0,180);
+    chassis.moveToPoint(-1, 32, 3000, {.forwards = false});
     // chassis.turnToHeading(180, 1200);
     // LBWing.set_value(true);
     // chassis.turnToHeading(190, 1200);
@@ -160,6 +172,58 @@ void nearSide()
     // LBWing.set_value(true);
 
 
+}
+
+void farSideSafe()
+{
+    pros::delay(3200);
+    intake = 60;
+    Hang.set_value(true);
+    pros::delay(500);
+    Hang.set_value(false);
+    chassis.moveToPoint(-2, 33, 1500);
+
+    //outtake matchload
+    chassis.turnToHeading(48, 1200);
+    chassis.waitUntilDone();
+    intake = -70;
+    pros::delay(500);
+    // intake = 0
+
+    //grab first ball
+    intake = 70;
+    chassis.turnToHeading(270, 1200);
+    chassis.moveToPoint(-29, 33, 1500);
+    chassis.moveToPoint(-14, 33, 1000, {.forwards = false});
+
+
+    //outtake first ball
+    chassis.turnToHeading(35, 1200);
+    chassis.waitUntilDone();
+    intake = -80;
+    pros::delay(1000);
+
+    //prep for second ball
+
+    //grab second ball
+    intake = 60;
+    chassis.turnToHeading(-45, 1200);
+    chassis.moveToPoint(-35, 54, 1500);
+    // chassis.moveToPoint(-29, 47, 1500);
+    chassis.turnToHeading(90, 1200);
+    chassis.waitUntilDone();
+
+    //outtake + wings
+    LWing.set_value(true);
+    RWing.set_value(true);
+    chassis.moveToPoint(5, 52, 1500);
+    chassis.waitUntil(10);
+    intake = -100;
+    chassis.waitUntilDone();
+    LWing.set_value(false);
+    RWing.set_value(false);
+    intake = 0;
+    chassis.moveToPoint(-25, 25, 1200, {.forwards = false});
 }
 
 void farSide()
@@ -173,20 +237,21 @@ void farSide()
 
     intake = 70;
 
-    chassis.moveToPoint(0, -3, 1500);
+    chassis.moveToPoint(0, -7, 1000);
 
-    chassis.moveToPoint(-3.5, 35, 1500, {.forwards = false});
+    chassis.moveToPoint(-3.5, 29.5, 1500, {.forwards = false});
     
     //align properly
-    chassis.turnToHeading(135, 1200);
+    chassis.turnToHeading(145, 1000);
     
     //chassis.moveToPoint(-10, 44, 2000, {.forwards = false});
 
     LBWing.set_value(true);
 
-    chassis.moveToPoint(-13, 44, 1200, {.forwards = false});
+    // chassis.moveToPoint(-13, 44, 1200, {.forwards = false});
     
-    chassis.moveToPoint(-20, 51, 1350, {.forwards = false});
+    chassis.moveToPoint(-19.5, 53, 1350, {.forwards = false});
+    chassis.waitUntil(14);
     LBWing.set_value(false);
     //chassis.moveToPoint(-20.3, 52.3, 1500, {.forwards = false});
     //chassis.moveToPose(-15, 58, 90, 2000, {.forwards = false});
@@ -195,50 +260,57 @@ void farSide()
     // chassis.waitUntil(20);
     // LBWing.set_value(false);
     
-    chassis.turnToHeading(100, 1000);
-    chassis.moveToPoint(-60, 54, 1500, {.forwards = false});
+    chassis.turnToHeading(115, 1000);
+    chassis.moveToPoint(-60, 51.5, 1500, {.forwards = false});
     chassis.waitUntil(8.75);
     chassis.cancelMotion();
     //push in goal
 
     chassis.turnToHeading(180, 900);
-    chassis.moveToPoint(-24, 24, 1100);
+    chassis.moveToPoint(-22, 40, 650);
+    chassis.moveToPoint(-33, 24, 650);
     //get out of goal
 
-    chassis.turnToHeading(290, 900);
+    chassis.turnToHeading(327, 1000);
     chassis.waitUntilDone();
-    intake = -100;
-    pros::delay(350);
+    intake = -127;
+    pros::delay(450);
     intake = 70;
     //outake ball
-    chassis.turnToHeading(210, 900);
-    chassis.moveToPoint(-32.5, 0, 1500);
+    chassis.turnToHeading(178, 900);
+    chassis.moveToPoint(-36, 0, 1500);
     // chassis.turnToHeading(-90, 1200);
     // chassis.moveToPoint(-38, 6, 1000);
     //pick up ball
-    chassis.turnToHeading(-38, 1000);
+    chassis.turnToHeading(-50, 1000);
     chassis.waitUntilDone();
     LWing.set_value(true);
+    // RWing.set_value(true)
     //score balls maybe
     
-    chassis.moveToPoint(-63, 54, 1400);
+    chassis.moveToPoint(-66, 54, 1400);
     chassis.waitUntil(8);
-    intake = -100;
+    intake = -70;
     chassis.waitUntil(47);
     LWing.set_value(false);
-    chassis.waitUntil(53);
-    chassis.moveToPoint(-63, 45, 1000);
+    // RWing.set_value(false);
+    chassis.moveToPoint(-30, 25, 1200, {.forwards = false});
 }
 
 
 void skills(){
     chassis.setPose(0, 0, 45);
+    Hang.set_value(true);
+    pros::delay(100);
+    
     intake = 70;
-    chassis.moveToPoint(18, 19, 5000);
+    chassis.moveToPoint(18, 19, 2000);
+    chassis.waitUntil(3);
+    Hang.set_value(false);
 
     chassis.turnToHeading(90, 1200);
     intake = -127;
-    chassis.moveToPoint(27, 19, 2000); //it goes in you feel it
+    chassis.moveToPoint(27, 19, 1000);
     pros::delay(800);
     intake = 0;
 
@@ -251,38 +323,72 @@ void skills(){
     // chassis.turnToHeading(90, 1200);
 
     //move to matchload
-    chassis.moveToPoint(14, 19, 5000, {.forwards = false});
+    chassis.moveToPoint(14, 19, 2000, {.forwards = false});
     chassis.turnToHeading(155, 1200);
-    chassis.moveToPoint(11, 20, 5000, {.forwards = false});
-    // open right back wing or something
+    chassis.moveToPoint(11, 20, 1000, {.forwards = false});
     chassis.turnToHeading(160, 1200);
     chassis.setBrakeMode(MOTOR_BRAKE_HOLD);
+    LBWing.set_value(true);
+
     //but heres the kicker
     //30 seconds
+    kicker = -medium;
+    pros::delay(30000);
+    kicker = 0;
+
+    LBWing.set_value(false);
     chassis.setBrakeMode(MOTOR_BRAKE_COAST);
-    chassis.moveToPoint(-3,-5, 4500);
-    chassis.moveToPoint(2, -74, 5000);
+    chassis.moveToPoint(0,-5, 1000);
+    chassis.moveToPoint(2, -74, 1500);
     chassis.turnToHeading(90, 1200);
+   
 
-    //start scooping
-    chassis.moveToPoint(22, -74, 5000);
-    chassis.moveToPoint(22, -55, 5000);
-
+    //prepare scooping
+    chassis.moveToPoint(25, -74, 2000);
     RWing.set_value(true);
-    chassis.moveToPose(50, -55, 180, 3000);//center
+    chassis.waitUntil(15);
+    RWing.set_value(false);
+    chassis.turnToHeading(0, 1200);
+    chassis.moveToPoint(25, -55, 2000);
+    // chassis.turnToHeading(0, 1200);
+
+
+    chassis.moveToPose(75, -30, 180, 2000);//center
+    RWing.set_value(false);
     // chassis.moveToPoint(48, -38, 5000);
     
     
-    chassis.turnToHeading(180, 1200);
-    
-    LWing.set_value(true);
-   
-    chassis.moveToPoint(48, -82, 5000);//it goes in you feel it
+    // chassis.turnToHeading(180, 1200);
+    chassis.turnToHeading(5, 1000);
+    // RWing.set_value(true);
     // LWing.set_value(true);
-    chassis.moveToPoint(48, -55, 5000, {.forwards = false});
+    
+    LBWing.set_value(true);
+
+    chassis.moveToPoint(65, -82, 2000, {.forwards = false});//it goes in you feel it
+    chassis.waitUntilDone();
+    LWing.set_value(false);
+    RWing.set_value(false);
+    
+    chassis.moveToPoint(90, -35, 2000, /*.forwards = false}*/);
+
+    chassis.waitUntil(10);
+    LBWing.set_value(false);
+
+    chassis.turnToHeading(190, 1200);
+    chassis.waitUntilDone();
+    // LWing.set_value(true);
+    // RWing.set_value(true);
+    
+
+    chassis.moveToPoint(85, -82, 2000);
     chassis.turnToHeading(180, 1200);
-    chassis.moveToPoint(62, -82, 5000);
-    chassis.turnToHeading(180, 1200);
+    chassis.waitUntilDone();
+
+    // chassis.moveToPoint(68, -50, 2000, {.forwards = false});
+    LWing.set_value(false);
+    RWing.set_value(false);
+    chassis.moveToPoint(10, -40, 1000, {.forwards = false});
 }
 
 /**
@@ -291,10 +397,11 @@ void skills(){
  * This is an example autonomous routine which demonstrates a lot of the features LemLib has to offer
  */
 void autonomous() {
-    nearSide();
+
+    // nearSide();
     // farSide();  
-    //intake = 50;
-//    skills();
+    //farSideSafe();
+    skills();
 }
 
 void arcade(){
@@ -375,7 +482,7 @@ void opcontrol() {
     while (true) {
         arcade();
         intakeControl(80);
-        kickerControl(80);
+        kickerControl(medium);
         wingControl();
 
         // delay to save resources
