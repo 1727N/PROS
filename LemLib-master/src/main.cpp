@@ -332,7 +332,7 @@ void skills(){
 
     //but heres the kicker
     //30 seconds
-    kicker = -medium;
+    kicker = -(easy+3) ;
     pros::delay(30000);
     kicker = 0;
 
@@ -353,7 +353,7 @@ void skills(){
     // chassis.turnToHeading(0, 1200);
 
 
-    chassis.moveToPose(75, -30, 180, 2000);//center
+    chassis.moveToPose(55, -30, 180, 2000);//center
     RWing.set_value(false);
     // chassis.moveToPoint(48, -38, 5000);
     
@@ -362,26 +362,26 @@ void skills(){
     chassis.turnToHeading(5, 1000);
     // RWing.set_value(true);
     // LWing.set_value(true);
-    
+    chassis.waitUntilDone();
     LBWing.set_value(true);
 
-    chassis.moveToPoint(65, -82, 2000, {.forwards = false});//it goes in you feel it
+    chassis.moveToPoint(63, -82, 2000, {.forwards = false});//it goes in you feel it
     chassis.waitUntilDone();
     LWing.set_value(false);
     RWing.set_value(false);
     
-    chassis.moveToPoint(90, -35, 2000, /*.forwards = false}*/);
+    chassis.moveToPoint(63, -30, 2000 /*.forwards = false}*/);
 
     chassis.waitUntil(10);
     LBWing.set_value(false);
 
     chassis.turnToHeading(190, 1200);
     chassis.waitUntilDone();
-    // LWing.set_value(true);
-    // RWing.set_value(true);
+    LWing.set_value(true);
+    RWing.set_value(true);
     
 
-    chassis.moveToPoint(85, -82, 2000);
+    chassis.moveToPoint(67, -82, 2000);
     chassis.turnToHeading(180, 1200);
     chassis.waitUntilDone();
 
@@ -482,7 +482,7 @@ void opcontrol() {
     while (true) {
         arcade();
         intakeControl(80);
-        kickerControl(medium);
+        kickerControl(easy+5);
         wingControl();
 
         // delay to save resources
