@@ -125,26 +125,26 @@ void nearSide()
     //bakc it up
     chassis.moveToPoint(-16, -12, 2000, {.forwards = false});
     //trick pid to get more speed
-    chassis.moveToPoint(-60, -12, 2000, {.forwards = false});
-    chassis.waitUntil(10);
-    chassis.cancelMotion();
-
-    chassis.moveToPoint(-16, -10, 2000);
-    chassis.turnToHeading(-90, 1200);
+    //chassis.moveToPoint(-60, -12, 2000, {.forwards = false});
+    //chassis.waitUntil(10);
+    //chassis.cancelMotion();
 
 
-    // chassis.moveToPoint(-14, -8, 2000, {.forwards = false});
-    chassis.moveToPoint(-6, 2, 2000, {.forwards = false});
-    // chassis.waitUntil(1);
+    //temp
+    chassis.turnToHeading(90, 1200);
+    chassis.moveToPoint(-4, -12, 2000);
+    //
+
+    //chassis.moveToPoint(-14, -14, 2000);
+
+
+    chassis.moveToPoint(-8, -4, 2000);
     LWing.set_value(true);
     chassis.waitUntil(10);
     LWing.set_value(false);
 
-    chassis.moveToPoint(-1, 8, 1000, {.forwards = false});
-    chassis.turnToHeading(180, 1200);
-    chassis.waitUntilDone();
-    chassis.setPose(0,0,180);
-    chassis.moveToPoint(-1, 32, 3000, {.forwards = false});
+    chassis.moveToPoint(-1, 8, 1000);
+    //chassis.moveToPoint(-1, 32, 3000, {.forwards = false});
 }
 
 void farSideSafe()
@@ -254,8 +254,7 @@ void farSide()
 void autonomous() {
     //autonWait();
     
-    chassis.moveToPoint(0, 10, 5000);
-    chassis.moveToPoint(0, 0, 5000, {.forwards = false});
+    nearSide();
 
     //nearSide();
     //farSide();  
