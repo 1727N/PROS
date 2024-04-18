@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "SManSkillBack",
+    "project_name": "Test",
     "target": "v5",
     "templates": {
       "kernel": {
@@ -169,7 +169,7 @@
     "upload_options": {
       "description": "Bruh",
       "icon": "planet",
-      "slot": 5
+      "slot": 1
     }
   }
 }
