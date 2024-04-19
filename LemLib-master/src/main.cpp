@@ -18,11 +18,11 @@ pros::Motor rB(15, pros::E_MOTOR_GEARSET_06); // right back motor. port 13
 pros::Motor intakeLeft(9, pros::E_MOTOR_GEARSET_18);
 pros::Motor intakeRight(-2, pros::E_MOTOR_GEARSET_18);
 
-pros::ADIDigitalOut LWing('D');
+pros::ADIDigitalOut LWing('A');
 pros::ADIDigitalOut RWing('B');
 
 pros::ADIDigitalOut PTO('C');
-
+pros::ADIDigitalOut Clamp('D');
 
 // motor groups
 pros::MotorGroup leftMotors({lF, lM, lB}); // left motor group
@@ -48,7 +48,7 @@ lemlib::Drivetrain drivetrain(&leftMotors, // left motor group
 );
 
 // lateral motion controller
-lemlib::ControllerSettings linearController(14, // proportional gain (kP)
+lemlib::ControllerSettings linearController(13, // proportional gain (kP)
                                             0.3, // integral gain (kI)
                                             39, // derivative gain (kD)
                                             1, // anti windup
@@ -123,31 +123,28 @@ void nearSide()
 {
     chassis.setPose(0, 0, 45);
     //bakc it up
-    chassis.moveToPoint(-16, -12, 2000, {.forwards = false});
+    chassis.moveToPoint(-16, -14, 2000, lemlib::MoveToPointParams{.forwards = false, .maxSpeed = 80});
     //trick pid to get more speed
-    //chassis.moveToPoint(-60, -12, 2000, {.forwards = false});
-    //chassis.waitUntil(10);
-    //chassis.cancelMotion();
-
-
-    //temp
-    chassis.turnToHeading(90, 1200);
-    chassis.moveToPoint(-4, -12, 2000);
-    //
+    chassis.moveToPoint(-60, -16, 2000, {.forwards = false});
+    chassis.waitUntil(6);
+    chassis.cancelMotion();
 
     //chassis.moveToPoint(-14, -14, 2000);
 
 
-    chassis.moveToPoint(-8, -4, 2000);
-    LWing.set_value(true);
-    chassis.waitUntil(10);
-    LWing.set_value(false);
+    chassis.moveToPoint(-7, -4, 2000);
+    chassis.waitUntil(3);
 
-    chassis.moveToPoint(-1, 8, 1000);
+    RWing.set_value(true);
+    chassis.moveToPose(-1, 27.5, 0, 3000);
+    chassis.waitUntil(2);
+    RWing.set_value(false);
+
+
     //chassis.moveToPoint(-1, 32, 3000, {.forwards = false});
 }
 
-void farSideSafe()
+void DNUfarSideSafe()
 {
     intake = 60;
     pros::delay(500);
@@ -196,7 +193,7 @@ void farSideSafe()
     chassis.moveToPoint(-25, 25, 1200, {.forwards = false});
 }
 
-void farSide()
+void DNUfarSide()
 {
 
     chassis.setPose(0, 0, 180);
@@ -250,13 +247,44 @@ void farSide()
     chassis.moveToPoint(-30, 25, 1200, {.forwards = false});
 }
 
+void farSafe(){
+    intake = 60;
+
+    chassis.moveToPoint(0, 36, 2000, lemlib::MoveToPointParams{.maxSpeed = 80});
+    chassis.waitUntil(10);
+    intake = 20;
+
+    /* LEFT SIDE -- TESTING ONLY 
+    chassis.turnToHeading(-90, 1200);
+    chassis.waitUntilDone();
+
+    intake = -127;
+    chassis.moveToPoint(-8, 36, 2000);
+    chassis.waitUntil(6);
+    intake = 0;
+
+    chassis.moveToPoint(0, 36, 2000, {.forwards = false});
+    */
+
+    // RIGHT SIDE -- REAL MATCH
+    chassis.turnToHeading(90, 1200);
+    chassis.waitUntilDone();
+
+    intake = -127;
+    chassis.moveToPoint(8, 36, 2000);
+    chassis.waitUntil(6);
+    intake = 0;
+
+    chassis.moveToPoint(0, 36, 2000, {.forwards = false});
+}
 
 void autonomous() {
     //autonWait();
     
-    nearSide();
-
     //nearSide();
+    farSafe();
+
+
     //farSide();  
     //farSideSafe();
 }
@@ -311,10 +339,19 @@ void wingControl(){
 }
 
 void ptoControl(){
-    if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP) && controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)){
+    if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT) && controller.get_digital(pros::E_CONTROLLER_DIGITAL_A)){
         ptoToggle = !ptoToggle;
         PTO.set_value(ptoToggle);
     }
+}
+
+bool unclamped;
+
+void clampControl(){
+    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) && controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)){
+        unclamped = true;
+    }
+    Clamp.set_value(unclamped);
 }
 
 
@@ -330,6 +367,7 @@ void opcontrol() {
         arcade();
         intakeControl(80);
         wingControl();
+        clampControl();
         ptoControl();
 
         // delay to save resources
